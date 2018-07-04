@@ -50,11 +50,41 @@ def fs_info(item, host, uri):
     del(res['available_in_bytes'])
     return res
 
+def io_stats(item, host, uri, cluster):
+    hostname = host.split(":")[0]
+    port = host.split(":")[1]
+    data = http_get(hostname, int(port), uri)
+    data = json.loads(data)
+    res = {"read_kilobytes": 0, "write_kilobytes": 0}
+    file = "." + str(cluster)
+    last = {"read_kilobytes": 0, "write_kilobytes": 0}
+    for node in data['nodes']:
+        if 'data' in data['nodes'][node]['roles']:
+            stats = data['nodes'][node]['fs']['io_stats']['total']
+            res['read_kilobytes'] += stats['read_kilobytes']
+            res['write_kilobytes'] += stats['write_kilobytes']
+    try:
+        with open(file, 'r') as json_file:
+            last = json.load(json_file)
+        with open(file, 'w') as json_file:
+            json_file.write(json.dumps(res))
+        for m in res:
+            res[m] -= last[m]
+    except:
+        with open(file, 'w') as json_file:
+            json_file.write(json.dumps(res))
+        return None
+
+    return res
+
 def put_influxdb(data, db_addr, db_name, cluster, measurement):
     url = db_addr + "/write?db=" + db_name
-    for m in data:
-        value = measurement + ",cluster=" + str(cluster) + " " + str(m) + "=" + str(data[m])
-        http_post(url, value)
+    try:
+        for m in data:
+            value = measurement + ",cluster=" + str(cluster) + " " + str(m) + "=" + str(data[m])
+            http_post(url, value)
+    except:
+        return None
 
 def process_one_item(item, uri, cluster, host=None, db_addr=None, db_name=None):
     if item == "api_cluster":
@@ -66,6 +96,10 @@ def process_one_item(item, uri, cluster, host=None, db_addr=None, db_name=None):
     if item == "api_fs":
         data = fs_info(item, host, uri)
         put_influxdb(data, db_addr, db_name, cluster, "fs_info")
+        return None
+    if item == "api_io":
+        data = io_stats(item, host, uri, cluster)
+        put_influxdb(data, db_addr, db_name, cluster, "io_stats")
         return None
 
 def get_db_cfg(config, section):
