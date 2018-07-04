@@ -33,11 +33,21 @@ def fs_info(item, host, uri):
     data = http_get(hostname, int(port), uri)
     data = json.loads(data)
     res = {"total_in_bytes": 0, "available_in_bytes": 0}
-    for m in res:
-        for node in data['nodes']:
-            if 'data' in data['nodes'][node]['roles']:
-                res[m] += data['nodes'][node]['fs']['total'][m]
-    res['available_fs_percent'] = float(res['available_in_bytes']) * 100 / float(res['total_in_bytes'])
+    max_percent = 0.0
+    for node in data['nodes']:
+        if 'data' in data['nodes'][node]['roles']:
+            total = data['nodes'][node]['fs']['total']['total_in_bytes']
+            available = data['nodes'][node]['fs']['total']['available_in_bytes']
+            res['available_in_bytes'] = available
+            res['total_in_bytes'] = total
+            percent = float(total - available) * 100 / float(total)
+            if max_percent < percent:
+                max_percent = percent
+
+    res['use_in_bytes'] = res['total_in_bytes'] - res['available_in_bytes']
+    res['us_fs_percent'] = float(res['use_in_bytes']) * 100 / float(res['total_in_bytes'])
+    res['max_percent'] = max_percent
+    del(res['available_in_bytes'])
     return res
 
 def put_influxdb(data, db_addr, db_name, cluster, measurement):
