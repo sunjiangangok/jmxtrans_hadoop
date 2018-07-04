@@ -38,8 +38,8 @@ def fs_info(item, host, uri):
         if 'data' in data['nodes'][node]['roles']:
             total = data['nodes'][node]['fs']['total']['total_in_bytes']
             available = data['nodes'][node]['fs']['total']['available_in_bytes']
-            res['available_in_bytes'] = available
-            res['total_in_bytes'] = total
+            res['available_in_bytes'] += available
+            res['total_in_bytes'] += total
             percent = float(total - available) * 100 / float(total)
             if max_percent < percent:
                 max_percent = percent
