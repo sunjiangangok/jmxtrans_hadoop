@@ -45,7 +45,7 @@ def fs_info(item, host, uri):
                 max_percent = percent
 
     res['use_in_bytes'] = res['total_in_bytes'] - res['available_in_bytes']
-    res['us_fs_percent'] = float(res['use_in_bytes']) * 100 / float(res['total_in_bytes'])
+    res['use_fs_percent'] = float(res['use_in_bytes']) * 100 / float(res['total_in_bytes'])
     res['max_percent'] = max_percent
     del(res['available_in_bytes'])
     return res
