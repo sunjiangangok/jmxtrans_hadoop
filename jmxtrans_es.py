@@ -21,7 +21,7 @@ def cluster_info(item, host, uri):
     port = host.split(":")[1]
     data = http_get(hostname, int(port), uri)
     data = json.loads(data)
-    l = ["status", "active_shards", "number_of_pending_tasks", "number_of_nodes", "number_of_data_nodes"]
+    l = ["status", "active_shards", "number_of_pending_tasks", "number_of_nodes", "active_shards_percent_as_number"]
     res = {}
     for m in l:
         res[m] = data[m]
