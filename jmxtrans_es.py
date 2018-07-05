@@ -27,6 +27,14 @@ def cluster_info(item, host, uri):
         res[m] = data[m]
     return res
 
+def get_max_percent(data):
+    min = 100.0
+    for m in data:
+        available_percent = float(m["available_in_bytes"]) * 100 / float(m["total_in_bytes"])
+        if available_percent < min:
+            min = available_percent
+    return float(100) - min
+
 def fs_info(item, host, uri):
     hostname = host.split(":")[0]
     port = host.split(":")[1]
@@ -40,9 +48,8 @@ def fs_info(item, host, uri):
             available = data['nodes'][node]['fs']['total']['available_in_bytes']
             res['available_in_bytes'] += available
             res['total_in_bytes'] += total
-            percent = float(total - available) * 100 / float(total)
-            if max_percent < percent:
-                max_percent = percent
+
+            max_percent = get_max_percent(data['nodes'][node]['fs']['data'])
 
     res['use_in_bytes'] = res['total_in_bytes'] - res['available_in_bytes']
     res['use_fs_percent'] = float(res['use_in_bytes']) * 100 / float(res['total_in_bytes'])
