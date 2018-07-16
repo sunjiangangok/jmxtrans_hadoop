@@ -32,7 +32,8 @@ def get_item(metric, data, name, cluster):
 def get_data(ip1, ip2, port, uri):
     res = http_get(ip1, port, uri)
     data = res.read()
-    if "This is standby RM" not in data:
+    if "This is standby RM" not in data \
+            and '"tag.HAState" : "standby"' not in data:
         return data
     else:
         res = http_get(ip2, port, uri)
