@@ -27,13 +27,10 @@ def cluster_info(item, host, uri):
         res[m] = data[m]
     return res
 
-def get_max_percent(data):
-    min = 100.0
+def get_percent(data):
     for m in data:
         available_percent = float(m["available_in_bytes"]) * 100 / float(m["total_in_bytes"])
-        if available_percent < min:
-            min = available_percent
-    return float(100) - min
+    return available_percent
 
 def fs_info(item, host, uri):
     hostname = host.split(":")[0]
@@ -42,6 +39,7 @@ def fs_info(item, host, uri):
     data = json.loads(data)
     res = {"total_in_bytes": 0, "available_in_bytes": 0}
     max_percent = 0.0
+    l = []
     for node in data['nodes']:
         if 'data' in data['nodes'][node]['roles']:
             total = data['nodes'][node]['fs']['total']['total_in_bytes']
@@ -49,8 +47,10 @@ def fs_info(item, host, uri):
             res['available_in_bytes'] += available
             res['total_in_bytes'] += total
 
-            max_percent = get_max_percent(data['nodes'][node]['fs']['data'])
+            percent = get_percent(data['nodes'][node]['fs']['data'])
+            l.append(percent)
 
+    max_percent = float(100) - min(l)
     res['use_in_bytes'] = res['total_in_bytes'] - res['available_in_bytes']
     res['use_fs_percent'] = float(res['use_in_bytes']) * 100 / float(res['total_in_bytes'])
     res['max_percent'] = max_percent
