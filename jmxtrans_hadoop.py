@@ -65,8 +65,11 @@ if __name__ == "__main__":
         metric = config.get(section, "metric")
         name = config.get(section, "name")
         dbname = config.get(section, "db_name")
-        put_influxdb(section, active_ip, active_port, db_address,
-                     metric=json.loads(metric),
-                     db_name=dbname,
-                     name=name,
-                     standby_ip=standby_ip)
+        try:
+            put_influxdb(section, active_ip, active_port, db_address,
+                         metric=json.loads(metric),
+                         db_name=dbname,
+                         name=name,
+                         standby_ip=standby_ip)
+        except:
+            print "error"
